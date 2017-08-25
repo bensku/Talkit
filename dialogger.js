@@ -102,7 +102,7 @@ function validateConnection(cellViewS, magnetS, cellViewT, magnetT, end, linkVie
 	//			return false; // We can only connect to multiple targets of the same type
 	//		if (targetCell == cellViewT.model)
 	//			return false; // Already connected
-	//	} 
+	//	}
 	//}
 
 	return true;
@@ -128,7 +128,7 @@ function validateMagnet(cellView, magnet)
 				var targetCell = graph.getCell(link.attributes.target.id);
 				if (unlimitedConnections.indexOf(targetCell.attributes.type) !== -1)
 					return true; // It's okay because this target type has unlimited connections
-			} 
+			}
 			return false;
 		}
 	}
@@ -176,7 +176,7 @@ joint.shapes.dialogue.BaseView = joint.shapes.devs.ModelView.extend(
 
 	initialize: function()
 	{
-	  
+
 
 		_.bindAll(this, 'updateBox');
 		joint.shapes.devs.ModelView.prototype.initialize.apply(this, arguments);
@@ -227,7 +227,7 @@ joint.shapes.dialogue.BaseView = joint.shapes.devs.ModelView.extend(
 	{
 		// Set the position and dimension of the box so that it covers the JointJS element.
 	    var bbox = this.model.getBBox();
-       
+
 		// Example of updating the HTML with a data stored in the cell model.
 		var nameField = this.$box.find('input.name');
 		if (!nameField.is(':focus'))
@@ -272,7 +272,7 @@ joint.shapes.dialogue.ChoiceView = joint.shapes.devs.ModelView.extend(
         '<input type="choice" class="title" placeholder="Title" />',
         '<p> <textarea type="text" class="name" rows="4" cols="27" placeholder="Speech"></textarea></p>',
 		'</div>',
-        		
+
 	].join(''),
 
     initialize: function () {
@@ -354,7 +354,7 @@ joint.shapes.dialogue.Node = joint.shapes.devs.Model.extend(
 			outPorts: ['output'],
 			attrs:
 			{
-				'.outPorts circle': { unlimitedConnections: ['dialogue.Choice'], }
+				'.outPorts circle': { unlimitedConnections: ['dialogue.Choice', 'dialogue.Branch'], }
 			},
 		},
 		joint.shapes.dialogue.Base.prototype.defaults
@@ -378,8 +378,8 @@ joint.shapes.dialogue.Text = joint.shapes.devs.Model.extend(
 			textarea: 'Start writing',
 			attrs:
 			{
-			  
-				'.outPorts circle': { unlimitedConnections: ['dialogue.Choice'], }
+
+				'.outPorts circle': { unlimitedConnections: ['dialogue.Choice', 'dialogue.Branch'], }
 			},
 		},
 		joint.shapes.dialogue.Base.prototype.defaults
@@ -401,7 +401,11 @@ joint.shapes.dialogue.Choice = joint.shapes.devs.Model.extend(
 			inPorts: ['input'],
 			outPorts: ['output'],
 			title: '',
-            name: '',
+      name: '',
+      attrs:
+      {
+        '.outPorts circle': { unlimitedConnections: ['dialogue.Branch'], }
+      },
 		},
 		joint.shapes.dialogue.Base.prototype.defaults
 	),
@@ -422,6 +426,10 @@ joint.shapes.dialogue.Branch = joint.shapes.devs.Model.extend(
 			inPorts: ['input'],
 			outPorts: ['output0'],
 			values: [],
+      attrs:
+      {
+        '.outPorts circle': { unlimitedConnections: ['dialogue.Branch'], }
+      },
 		},
 		joint.shapes.dialogue.Base.prototype.defaults
 	),
@@ -436,7 +444,7 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 		'<button class="add">+</button>',
 		'<button class="remove">-</button>',
 		'<input type="text" class="name" placeholder="Variable" />',
-		'<input type="text" value="Default" readonly/>',
+		'<input type="text" placeholder="Value 1"/>',
 		'</div>',
 	].join(''),
 
@@ -483,7 +491,7 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 		{
 			// Prevent paper from handling pointerdown.
 			var field = $('<input type="text" class="value" />');
-			field.attr('placeholder', 'Value ' + (i + 1).toString());
+			field.attr('placeholder', 'Value ' + (i + 2).toString());
 			field.attr('index', i);
 			this.$box.append(field);
 			field.on('mousedown click', function(evt) { evt.stopPropagation(); });
@@ -532,6 +540,10 @@ joint.shapes.dialogue.Set = joint.shapes.devs.Model.extend(
 		    outPorts: ['output'],
 		    size: { width: 200, height: 100, },
 		    value: '',
+        attrs:
+        {
+          '.outPorts circle': { unlimitedConnections: ['dialogue.Branch'], }
+        },
 		},
 		joint.shapes.dialogue.Base.prototype.defaults
 	),
@@ -567,7 +579,7 @@ joint.shapes.dialogue.SetView = joint.shapes.dialogue.BaseView.extend(
 	},
 });
 
-//#endregion 
+//#endregion
 
 function gameData()
 {
@@ -602,7 +614,7 @@ function gameData()
 				node.variable = cell.name;
 				node.value = cell.value;
 				node.next = null;
-                
+
 			}
 
 			else if (node.type == 'Choice') {
@@ -613,7 +625,7 @@ function gameData()
 			}
 			else
 			{
-			    node.actor = cell.actor;
+			  node.actor = cell.actor;
 				node.name = cell.name;
 				node.next = null;
 			}
@@ -634,14 +646,8 @@ function gameData()
 				if (source.type == 'Branch')
 				{
 					var portNumber = parseInt(cell.source.port.slice('output'.length));
-					var value;
-					if (portNumber == 0)
-						value = '_default';
-					else
-					{
-						var sourceCell = cellsByID[source.id];
-						value = sourceCell.values[portNumber - 1];
-					}
+					var sourceCell = cellsByID[source.id];
+					var value = sourceCell.values[portNumber];
 					source.branches[value] = target ? target.id : null;
 				}
 				else if ((source.type == 'Text' || source.type == 'Node') && target && target.type == 'Choice')
@@ -649,12 +655,18 @@ function gameData()
 					if (!source.choices)
 					{
 						source.choices = [];
-						delete source.next;
+						//delete source.next; // Hey, don't delete this, since we can have *both* nodes and
 					}
 					source.choices.push(target.id);
 				}
 				else
-					source.next = target ? target.id : null;
+        {
+          if (!source.next)
+          {
+            source.next = [];
+          }
+          source.next.push(target.id);
+        }
 			}
 		}
 	}
