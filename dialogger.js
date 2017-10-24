@@ -41,23 +41,46 @@ var allowableConnections =
 	['dialogue.Text', 'dialogue.Choice'],
 	['dialogue.Text', 'dialogue.Set'],
 	['dialogue.Text', 'dialogue.Branch'],
+    ['dialogue.Text', 'dialogue.Speech'],
+    ['dialogue.Text', 'dialogue.Delay'],
 	['dialogue.Node', 'dialogue.Text'],
 	['dialogue.Node', 'dialogue.Node'],
 	['dialogue.Node', 'dialogue.Choice'],
 	['dialogue.Node', 'dialogue.Set'],
 	['dialogue.Node', 'dialogue.Branch'],
+    ['dialogue.Node', 'dialogue.Speech'],
+    ['dialogue.Node', 'dialogue.Delay'],
 	['dialogue.Choice', 'dialogue.Text'],
 	['dialogue.Choice', 'dialogue.Node'],
 	['dialogue.Choice', 'dialogue.Set'],
 	['dialogue.Choice', 'dialogue.Branch'],
+    ['dialogue.Choice', 'dialogue.Speech'],
+    ['dialogue.Choice', 'dialogue.Delay'],
 	['dialogue.Set', 'dialogue.Text'],
 	['dialogue.Set', 'dialogue.Node'],
 	['dialogue.Set', 'dialogue.Set'],
 	['dialogue.Set', 'dialogue.Branch'],
+    ['dialogue.Set', 'dialogue.Speech'],
+    ['dialogue.Set', 'dialogue.Delay'],
 	['dialogue.Branch', 'dialogue.Text'],
 	['dialogue.Branch', 'dialogue.Node'],
 	['dialogue.Branch', 'dialogue.Set'],
 	['dialogue.Branch', 'dialogue.Branch'],
+    ['dialogue.Branch', 'dialogue.Speech'],
+    ['dialogue.Branch', 'dialogue.Delay'],
+    ['dialogue.Speech', 'dialogue.Text'],
+	['dialogue.Speech', 'dialogue.Node'],
+	['dialogue.Speech', 'dialogue.Set'],
+	['dialogue.Speech', 'dialogue.Branch'],
+    ['dialogue.Speech', 'dialogue.Speech'],
+    ['dialogue.Speech', 'dialogue.Delay'],
+    ['dialogue.Delay', 'dialogue.Text'],
+	['dialogue.Delay', 'dialogue.Node'],
+	['dialogue.Delay', 'dialogue.Set'],
+	['dialogue.Delay', 'dialogue.Branch'],
+    ['dialogue.Delay', 'dialogue.Speech'],
+    ['dialogue.Delay', 'dialogue.Delay'],
+    
 ];
 
 
@@ -170,7 +193,7 @@ joint.shapes.dialogue.BaseView = joint.shapes.devs.ModelView.extend(
 		'<button class="delete">x</button>',
         '<input type="actor" class="actor" placeholder="Actor" />',
 		//'<input type="text" class="name" placeholder="Text" />',
-        '<p> <textarea type="text" class="name" rows="4" cols="27" placeholder="Speech"></textarea></p>',
+        '<p> <textarea type="text" class="name" rows="4" cols="27" placeholder="Text"></textarea></p>',
         '</div>',
 	].join(''),
 
@@ -343,7 +366,7 @@ joint.shapes.dialogue.ChoiceView = joint.shapes.devs.ModelView.extend(
 
 //#endregion
 
-//#region Dialoge.Node
+//#region dialogue.Node
 joint.shapes.dialogue.Node = joint.shapes.devs.Model.extend(
 {
 	defaults: joint.util.deepSupplement
@@ -387,6 +410,56 @@ joint.shapes.dialogue.Text = joint.shapes.devs.Model.extend(
 });
 
 joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView;
+
+//#endregion
+
+//#region dialogue.Speech
+joint.shapes.dialogue.Speech = joint.shapes.devs.Model.extend(
+{
+	defaults: joint.util.deepSupplement
+	(
+		{
+			type: 'dialogue.Speech',
+			inPorts: ['input'],
+			outPorts: ['output'],
+			actor: '',
+			textarea: 'Start writing',
+			attrs:
+			{
+
+				'.outPorts circle': { unlimitedConnections: ['dialogue.Branch'], }
+			},
+		},
+		joint.shapes.dialogue.Base.prototype.defaults
+	),
+});
+
+joint.shapes.dialogue.SpeechView = joint.shapes.dialogue.BaseView;
+
+//#endregion
+
+//#region dialogue.Delay
+joint.shapes.dialogue.Delay = joint.shapes.devs.Model.extend(
+{
+	defaults: joint.util.deepSupplement
+	(
+		{
+			type: 'dialogue.Delay',
+			inPorts: ['input'],
+			outPorts: ['output'],
+			actor: '',
+			textarea: 'Start writing',
+			attrs:
+			{
+
+				'.outPorts circle': { unlimitedConnections: ['dialogue.Branch'], }
+			},
+		},
+		joint.shapes.dialogue.Base.prototype.defaults
+	),
+});
+
+joint.shapes.dialogue.DelayView = joint.shapes.dialogue.BaseView;
 
 //#endregion
 
@@ -625,7 +698,7 @@ function gameData()
 			}
 			else
 			{
-			  node.actor = cell.actor;
+			    node.actor = cell.actor;
 				node.name = cell.name;
 				node.next = null;
 			}
@@ -1009,10 +1082,12 @@ $('#paper').contextmenu(
 	items:
 	[
 		{ text: 'Text', alias: '1-1', action: add(joint.shapes.dialogue.Text) },
-		{ text: 'Choice', alias: '1-2', action: add(joint.shapes.dialogue.Choice) },
-		{ text: 'Branch', alias: '1-3', action: add(joint.shapes.dialogue.Branch) },
-		{ text: 'Set', alias: '1-4', action: add(joint.shapes.dialogue.Set) },
-		{ text: 'Node', alias: '1-5', action: add(joint.shapes.dialogue.Node) },
+        { text: 'Speech', alias: '1-2', action: add(joint.shapes.dialogue.Speech) },
+		{ text: 'Choice', alias: '1-3', action: add(joint.shapes.dialogue.Choice) },
+		{ text: 'Branch', alias: '1-4', action: add(joint.shapes.dialogue.Branch) },
+		{ text: 'Set', alias: '1-5', action: add(joint.shapes.dialogue.Set) },
+		{ text: 'Node', alias: '1-6', action: add(joint.shapes.dialogue.Node) },
+        { text: 'Delay', alias: '1-7', action: add(joint.shapes.dialogue.Delay) },
 		{ type: 'splitLine' },
 		{ text: 'Save', alias: '2-1', action: save },
 		{ text: 'Load', alias: '2-2', action: load },
