@@ -41,46 +41,51 @@ var allowableConnections =
 	['dialogue.Text', 'dialogue.Choice'],
 	['dialogue.Text', 'dialogue.Set'],
 	['dialogue.Text', 'dialogue.Branch'],
-    ['dialogue.Text', 'dialogue.Speech'],
-    ['dialogue.Text', 'dialogue.Delay'],
+  ['dialogue.Text', 'dialogue.Speech'],
+  ['dialogue.Text', 'dialogue.Delay'],
 	['dialogue.Node', 'dialogue.Text'],
 	['dialogue.Node', 'dialogue.Node'],
 	['dialogue.Node', 'dialogue.Choice'],
 	['dialogue.Node', 'dialogue.Set'],
 	['dialogue.Node', 'dialogue.Branch'],
-    ['dialogue.Node', 'dialogue.Speech'],
-    ['dialogue.Node', 'dialogue.Delay'],
+  ['dialogue.Node', 'dialogue.Speech'],
+  ['dialogue.Node', 'dialogue.Delay'],
 	['dialogue.Choice', 'dialogue.Text'],
 	['dialogue.Choice', 'dialogue.Node'],
 	['dialogue.Choice', 'dialogue.Set'],
 	['dialogue.Choice', 'dialogue.Branch'],
-    ['dialogue.Choice', 'dialogue.Speech'],
-    ['dialogue.Choice', 'dialogue.Delay'],
+  ['dialogue.Choice', 'dialogue.Speech'],
+  ['dialogue.Choice', 'dialogue.Delay'],
 	['dialogue.Set', 'dialogue.Text'],
 	['dialogue.Set', 'dialogue.Node'],
 	['dialogue.Set', 'dialogue.Set'],
 	['dialogue.Set', 'dialogue.Branch'],
-    ['dialogue.Set', 'dialogue.Speech'],
-    ['dialogue.Set', 'dialogue.Delay'],
+  ['dialogue.Set', 'dialogue.Speech'],
+  ['dialogue.Set', 'dialogue.Delay'],
 	['dialogue.Branch', 'dialogue.Text'],
 	['dialogue.Branch', 'dialogue.Node'],
 	['dialogue.Branch', 'dialogue.Set'],
 	['dialogue.Branch', 'dialogue.Branch'],
-    ['dialogue.Branch', 'dialogue.Speech'],
-    ['dialogue.Branch', 'dialogue.Delay'],
-    ['dialogue.Speech', 'dialogue.Text'],
+  ['dialogue.Branch', 'dialogue.Speech'],
+  ['dialogue.Branch', 'dialogue.Delay'],
+  ['dialogue.Speech', 'dialogue.Text'],
 	['dialogue.Speech', 'dialogue.Node'],
 	['dialogue.Speech', 'dialogue.Set'],
 	['dialogue.Speech', 'dialogue.Branch'],
-    ['dialogue.Speech', 'dialogue.Speech'],
-    ['dialogue.Speech', 'dialogue.Delay'],
-    ['dialogue.Delay', 'dialogue.Text'],
+  ['dialogue.Speech', 'dialogue.Speech'],
+  ['dialogue.Speech', 'dialogue.Delay'],
+  ['dialogue.Delay', 'dialogue.Text'],
 	['dialogue.Delay', 'dialogue.Node'],
 	['dialogue.Delay', 'dialogue.Set'],
 	['dialogue.Delay', 'dialogue.Branch'],
-    ['dialogue.Delay', 'dialogue.Speech'],
-    ['dialogue.Delay', 'dialogue.Delay'],
-    
+  ['dialogue.Delay', 'dialogue.Speech'],
+  ['dialogue.Delay', 'dialogue.Delay'],
+  ['dialogue.Start', 'dialogue.Text'],
+  ['dialogue.Start', 'dialogue.Node'],
+  ['dialogue.Start', 'dialogue.Set'],
+  ['dialogue.Start', 'dialogue.Branch'],
+  ['dialogue.Start', 'dialogue.Speech'],
+  ['dialogue.Start', 'dialogue.Delay'],
 ];
 
 
@@ -654,6 +659,55 @@ joint.shapes.dialogue.SetView = joint.shapes.dialogue.BaseView.extend(
 
 //#endregion
 
+//#region dialogue.Start
+joint.shapes.dialogue.Start = joint.shapes.devs.Model.extend(
+{
+	defaults: joint.util.deepSupplement
+	(
+		{
+		    type: 'dialogue.Start',
+		    outPorts: ['output'],
+		    size: { width: 200, height: 100, },
+		    value: '',
+        attrs:
+        {
+          '.outPorts circle': { unlimitedConnections: ['dialogue.Branch'], }
+        },
+		},
+		joint.shapes.dialogue.Base.prototype.defaults
+	),
+});
+
+joint.shapes.dialogue.StartView = joint.shapes.dialogue.BaseView.extend(
+{
+	template:
+	[
+		'<div class="node">',
+		'<span class="label"></span>',
+		'<button class="delete">x</button>',
+		'</div>',
+	].join(''),
+
+	initialize: function()
+	{
+		joint.shapes.dialogue.BaseView.prototype.initialize.apply(this, arguments);
+		this.$box.find('input.value').on('change', _.bind(function(evt)
+		{
+			this.model.set('value', $(evt.target).val());
+		}, this));
+	},
+
+	updateBox: function()
+	{
+		joint.shapes.dialogue.BaseView.prototype.updateBox.apply(this, arguments);
+		var field = this.$box.find('input.value');
+		if (!field.is(':focus'))
+			field.val(this.model.get('value'));
+	},
+});
+
+//#endregion
+
 function gameData()
 {
 	var cells = graph.toJSON().cells;
@@ -670,7 +724,7 @@ function gameData()
 				type: cell.type.slice('dialogue.'.length),
 				id: cell.id,
 				actor: cell.actor,
-                title: cell.title,
+        title: cell.title,
 			};
 			if (node.type == 'Branch')
 			{
@@ -689,17 +743,15 @@ function gameData()
 				node.next = null;
 
 			}
-
 			else if (node.type == 'Choice') {
-			    node.name = cell.name;
-			    node.title = cell.title;
-			    node.next = null;
-
+			   node.data = cell.name;
+			   node.title = cell.title;
+			   node.next = null;
 			}
 			else
 			{
-			    node.actor = cell.actor;
-				node.name = cell.name;
+			  node.actor = cell.actor;
+				node.data = cell.name;
 				node.next = null;
 			}
 			nodes.push(node);
@@ -1082,12 +1134,13 @@ $('#paper').contextmenu(
 	items:
 	[
 		{ text: 'Text', alias: '1-1', action: add(joint.shapes.dialogue.Text) },
-        { text: 'Speech', alias: '1-2', action: add(joint.shapes.dialogue.Speech) },
+    { text: 'Speech', alias: '1-2', action: add(joint.shapes.dialogue.Speech) },
 		{ text: 'Choice', alias: '1-3', action: add(joint.shapes.dialogue.Choice) },
 		{ text: 'Branch', alias: '1-4', action: add(joint.shapes.dialogue.Branch) },
 		{ text: 'Set', alias: '1-5', action: add(joint.shapes.dialogue.Set) },
 		{ text: 'Node', alias: '1-6', action: add(joint.shapes.dialogue.Node) },
-        { text: 'Delay', alias: '1-7', action: add(joint.shapes.dialogue.Delay) },
+    { text: 'Delay', alias: '1-7', action: add(joint.shapes.dialogue.Delay) },
+    { text: 'Startpoint', alias: '1-8', action: add(joint.shapes.dialogue.Start) },
 		{ type: 'splitLine' },
 		{ text: 'Save', alias: '2-1', action: save },
 		{ text: 'Load', alias: '2-2', action: load },
