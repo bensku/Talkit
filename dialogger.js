@@ -877,11 +877,11 @@ function doSave()
 		}
 		else
 		{
-			if (!localStorage[filename])
-				addFileEntry(filename);
-			localStorage[filename] = JSON.stringify(graph);
+      $.post("save_story:" + filename, JSON.stringify(graph), function (data) {
+        flash('Saved ' + filename);
+      });
+      $.post("save_gamedata:" + filename, JSON.stringify(gameData()));
 		}
-		flash('Saved ' + filename);
 	}
 }
 
@@ -903,8 +903,13 @@ function load()
     }
 
     else {
-
+      $.getJSON("/saves.json", function(data) {
+        $('#menu div').remove();
+        $.each( data, function(index, name) {
+          addFileEntry(name)
+        });
         $('#menu').show();
+      });
     }
 }
 
@@ -1101,25 +1106,24 @@ function addFileEntry(name)
 
 	deleteButton.on('click', function(event)
 	{
-		localStorage.removeItem(name);
-		entry.remove();
-		event.stopPropagation();
+		var doDelete = confirm("Are you sure want to delete " + name + "?")
+    if (doDelete) {
+      entry.remove();
+      $.post("delete_story", name)
+    }
 	});
 
 	entry.on('click', function(event)
 	{
 		graph.clear();
-		graph.fromJSON(JSON.parse(localStorage[name]));
-		filename = name;
+    $.getJSON("/saves/" + name, function(data) {
+      graph.fromJSON(data);
+      filename = name;
+    });
 		$('#menu').hide();
 	});
 }
 
-(function()
-{
-	for (var i = 0; i < localStorage.length; i++)
-		addFileEntry(localStorage.key(i));
-})();
 
 $('#menu button.close').click(function()
 {
