@@ -5,17 +5,22 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import base64
 from pathlib import Path
 import json
+import configparser
 
 import tkinter as tk
 
-key = base64.b64encode(b"admin:1234").decode("ascii")
-save_dir = Path("../tests")
-game_dir = Path("../gamedata")
+config = configparser.ConfigParser()
+config.read("config.ini")
+config = config["Default"]
+
+key = base64.b64encode(bytes(config["User"] + ":" + config["Password"], "utf-8")).decode("ascii")
+save_dir = Path(config["SaveDir"])
+game_dir = Path(config["GameDataDir"])
 
 class TalkitRequestHandler(BaseHTTPRequestHandler):
     def do_AUTHHEAD(self):
         self.send_response(401)
-        self.send_header("WWW-Authenticate", "Basic realm=\"Enter a nickname and (unique) password for this session. Then, accept them in server UI.\"")
+        self.send_header("WWW-Authenticate", "Basic realm=\"Talkit Server.\"")
         self.send_header("Content-type", "text/html; charset=utf-8")
         self.end_headers()
 
@@ -49,7 +54,7 @@ class TalkitRequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(Path("../" + data_file).read_bytes())
         else:
             self.do_AUTHHEAD()
-            self.wfile.write(bytes("incorrect", "utf-8"))
+            self.wfile.write(bytes("incorrect credentials", "utf-8"))
 
     def get_saves(self):
         global save_dir
