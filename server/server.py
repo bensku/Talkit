@@ -7,8 +7,6 @@ from pathlib import Path
 import json
 import configparser
 
-import tkinter as tk
-
 config = configparser.ConfigParser()
 config.read("config.ini")
 config = config["Default"]
@@ -80,7 +78,7 @@ class TalkitRequestHandler(BaseHTTPRequestHandler):
             self.send_response(200)
 
 def run_server():
-    server_address = ("127.0.0.1", 8081)
+    server_address = ("127.0.0.1", int(config["Port"]))
     httpd = HTTPServer(server_address, TalkitRequestHandler)
     httpd.serve_forever()
 
