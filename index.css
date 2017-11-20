@@ -1,4 +1,4 @@
-html, body 
+html, body
 {
 	padding: 0px;
 	color: #fff;
@@ -12,7 +12,7 @@ html, body
 	background: -o-linear-gradient(top, #7d8ea2 0%,#121413 100%); /* Opera 11.10+ */
 	background: -ms-linear-gradient(top, #7d8ea2 0%,#121413 100%); /* IE10+ */
 	background: linear-gradient(to bottom, #7d8ea2 0%,#121413 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#7d8ea2', endColorstr='#121413',GradientType=0 ); /* IE6-9 */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#7d8ea2', endColorstr='#121413',GradientTpe=0 ); /* IE6-9 */
 	overflow: hidden;
 }
 
@@ -145,19 +145,19 @@ Node styles
 .node input[type="text"], button
 {
 	/* Enable interacting with inputs only. */
-	pointer-events: auto;	
+	pointer-events: auto;
 	border: none;
 	box-sizing: border-box;
 	background-color: #456;
 	color: #fff;
-   
+
 }
 
 
 .node input[type="actor"]
 {
 	/* Enable interacting with inputs only. */
-	pointer-events: auto;	
+	pointer-events: auto;
 	border: none;
 	box-sizing: border-box;
 	background-color: #456;
@@ -173,7 +173,7 @@ Node styles
 .node input[type="choice"]
 {
 	/* Enable interacting with inputs only. */
-	pointer-events: auto;	
+	pointer-events: auto;
 	border: none;
 	box-sizing: border-box;
 	background-color: #456;
@@ -186,15 +186,29 @@ Node styles
 }
 
 
-.node textarea 
+.node select
 {
-    	/* Enable interacting with inputs only. */
-	pointer-events: auto;	
+	/* Enable interacting with inputs only. */
+	pointer-events: auto;
 	border: none;
 	box-sizing: border-box;
 	background-color: #456;
 	color: #fff;
-    
+  width: 88%;
+	padding: 2px;
+  float: left;
+}
+
+
+.node textarea
+{
+    	/* Enable interacting with inputs only. */
+	pointer-events: auto;
+	border: none;
+	box-sizing: border-box;
+	background-color: #456;
+	color: #fff;
+
 
 
 }
@@ -258,7 +272,6 @@ button.delete:hover
 	width: 100%;
 	padding: 4px;
 	margin-top: 2px;
- 
 }
 
 

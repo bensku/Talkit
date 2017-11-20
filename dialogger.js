@@ -632,8 +632,9 @@ joint.shapes.dialogue.SetView = joint.shapes.dialogue.BaseView.extend(
 	template:
 	[
 		'<div class="node">',
-		'<span class="label"></span>',
+		//'<span class="label"></span>',
 		'<button class="delete">x</button>',
+    '<select><option value="1">SetVar</option><option value="2">SetVar2</option></select>',
 		'<input type="text" class="name" placeholder="Variable" />',
 		'<input type="text" class="value" placeholder="Value" />',
 		'</div>',
