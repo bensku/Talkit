@@ -450,6 +450,7 @@ joint.shapes.dialogue.Delay = joint.shapes.devs.Model.extend(
 	(
 		{
 			type: 'dialogue.Delay',
+      size: { width: 130, height: 70 },
 			inPorts: ['input'],
 			outPorts: ['output'],
 			actor: '',
@@ -464,7 +465,34 @@ joint.shapes.dialogue.Delay = joint.shapes.devs.Model.extend(
 	),
 });
 
-joint.shapes.dialogue.DelayView = joint.shapes.dialogue.BaseView;
+joint.shapes.dialogue.DelayView = joint.shapes.dialogue.BaseView.extend(
+{
+	template:
+	[
+		'<div class="node">',
+		'<span class="label"></span>',
+		'<button class="delete">x</button>',
+    '<input type="text" class="name" placeholder="Delay (seconds)" />',
+		'</div>',
+	].join(''),
+
+	initialize: function()
+	{
+		joint.shapes.dialogue.BaseView.prototype.initialize.apply(this, arguments);
+		this.$box.find('input.value').on('change', _.bind(function(evt)
+		{
+			this.model.set('value', $(evt.target).val());
+		}, this));
+	},
+
+	updateBox: function()
+	{
+		joint.shapes.dialogue.BaseView.prototype.updateBox.apply(this, arguments);
+		var field = this.$box.find('input.value');
+		if (!field.is(':focus'))
+			field.val(this.model.get('value'));
+	},
+});
 
 //#endregion
 
@@ -474,7 +502,7 @@ joint.shapes.dialogue.Choice = joint.shapes.devs.Model.extend(
 	defaults: joint.util.deepSupplement
 	(
 		{
-		    size: { width: 250, height: 135 },
+		  size: { width: 250, height: 135 },
 			type: 'dialogue.Choice',
 			inPorts: ['input'],
 			outPorts: ['output'],
@@ -616,7 +644,7 @@ joint.shapes.dialogue.Set = joint.shapes.devs.Model.extend(
 		    type: 'dialogue.Set',
 		    inPorts: ['input'],
 		    outPorts: ['output'],
-		    size: { width: 200, height: 100, },
+		    size: { width: 200, height: 130, },
 		    value: '',
         attrs:
         {
@@ -627,6 +655,18 @@ joint.shapes.dialogue.Set = joint.shapes.devs.Model.extend(
 	),
 });
 
+var actions = [
+  ["Set ObjVar", "setvar"],
+  ["Modify Trait", "trait"],
+  ["Set/give Quest", "quest"]
+];
+
+var actionElements = [];
+for (i = 0; i < actions.length; i++) {
+  var action = actions[i];
+  actionElements.push('<button class="menu">' + action[0] + '</button>');
+}
+
 joint.shapes.dialogue.SetView = joint.shapes.dialogue.BaseView.extend(
 {
 	template:
@@ -634,19 +674,50 @@ joint.shapes.dialogue.SetView = joint.shapes.dialogue.BaseView.extend(
 		'<div class="node">',
 		//'<span class="label"></span>',
 		'<button class="delete">x</button>',
-    '<select><option value="1">SetVar</option><option value="2">SetVar2</option></select>',
+    '<div class="menucontainer">',
+  ].concat(actionElements).concat(
+  [
+    '</div>',
+    '<div class="menuspace"></div>',
+    '<input type="text" class="actor" placeholder="Actor" />',
 		'<input type="text" class="name" placeholder="Variable" />',
 		'<input type="text" class="value" placeholder="Value" />',
+    '<input type="hidden" class="action" />',
 		'</div>',
-	].join(''),
+	]).join(''),
 
 	initialize: function()
 	{
+    var menuOpen = false;
 		joint.shapes.dialogue.BaseView.prototype.initialize.apply(this, arguments);
 		this.$box.find('input.value').on('change', _.bind(function(evt)
 		{
 			this.model.set('value', $(evt.target).val());
 		}, this));
+
+    var menucontainer = this.$box.find('.menucontainer');
+    menucontainer.children().hide();
+    var actionId = this.model.get('action');
+    if (actionId == null) {
+      actionId = 0;
+      this.model.set('action', actionId);
+    }
+    menucontainer.children().eq(actionId).show();
+    var theModel = this.model;
+    this.$box.find('.menu').on('click', function (event)
+    {
+      var target = $(event.target)
+      if (!menuOpen) {
+        menucontainer.children().show();
+        menuOpen = true;
+      } else {
+        actionId = target.index();
+        theModel.set('action', actionId);
+        menucontainer.children().hide();
+        menucontainer.children().eq(actionId).show();
+        menuOpen = false;
+      }
+    });
 	},
 
 	updateBox: function()
@@ -668,7 +739,7 @@ joint.shapes.dialogue.Start = joint.shapes.devs.Model.extend(
 		{
 		    type: 'dialogue.Start',
 		    outPorts: ['output'],
-		    size: { width: 200, height: 100, },
+		    size: { width: 120, height: 60, },
 		    value: '',
         attrs:
         {
@@ -741,6 +812,7 @@ function gameData()
 			{
 				node.variable = cell.name;
 				node.value = cell.value;
+        node.action = actions[cell.action][1];
 				node.next = null;
 
 			}
@@ -1142,7 +1214,7 @@ $('#paper').contextmenu(
     { text: 'Speech', alias: '1-2', action: add(joint.shapes.dialogue.Speech) },
 		{ text: 'Choice', alias: '1-3', action: add(joint.shapes.dialogue.Choice) },
 		{ text: 'Branch', alias: '1-4', action: add(joint.shapes.dialogue.Branch) },
-		{ text: 'Set', alias: '1-5', action: add(joint.shapes.dialogue.Set) },
+		{ text: 'Action', alias: '1-5', action: add(joint.shapes.dialogue.Set) },
 		{ text: 'Node', alias: '1-6', action: add(joint.shapes.dialogue.Node) },
     { text: 'Delay', alias: '1-7', action: add(joint.shapes.dialogue.Delay) },
     { text: 'Startpoint', alias: '1-8', action: add(joint.shapes.dialogue.Start) },

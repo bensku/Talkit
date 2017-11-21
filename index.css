@@ -186,20 +186,6 @@ Node styles
 }
 
 
-.node select
-{
-	/* Enable interacting with inputs only. */
-	pointer-events: auto;
-	border: none;
-	box-sizing: border-box;
-	background-color: #456;
-	color: #fff;
-  width: 88%;
-	padding: 2px;
-  float: left;
-}
-
-
 .node textarea
 {
     	/* Enable interacting with inputs only. */
@@ -237,7 +223,7 @@ Node styles
 	color: #ea6;
 }
 
-button
+button.delete, button.remove, button.add
 {
 	float: right;
 	border: none;
@@ -250,6 +236,31 @@ button
 	padding: 0;
 	margin: 0;
 	cursor: pointer;
+}
+
+div.menucontainer
+{
+	padding: 2px;
+	opacity: 1;
+	position: fixed;
+	width: 80%;
+	background-color: #888888;
+	border-radius: 2px;
+}
+
+div.menuspace
+{
+	height: 35px;
+}
+
+button.menu
+{
+	padding: 3px;
+	margin: 1px;
+	margin-top: 1px;
+	width: 99%;
+	text-align: left;
+	font-weight: bold;
 }
 
 button.delete:hover
