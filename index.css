@@ -248,9 +248,21 @@ div.menucontainer
 	border-radius: 2px;
 }
 
+div.menucontainer-branch
+{
+	padding: 2px;
+	opacity: 1;
+	position: fixed;
+	width: 62%;
+	background-color: #888888;
+	border-radius: 2px;
+}
+
 div.menuspace
 {
-	height: 35px;
+	float: right;
+	height: 32px;
+	width: 1px;
 }
 
 button.menu
@@ -261,6 +273,7 @@ button.menu
 	width: 99%;
 	text-align: left;
 	font-weight: bold;
+	cursor: pointer;
 }
 
 button.delete:hover

@@ -540,25 +540,69 @@ joint.shapes.dialogue.Branch = joint.shapes.devs.Model.extend(
 		joint.shapes.dialogue.Base.prototype.defaults
 	),
 });
+
+var conditions = [
+  ["ObjVar", "objvar"],
+  ["Trait", "trait"],
+  ["Sympathy", "sympathy"],
+  ["Quest State", "quest"],
+];
+
+var condElements = [];
+for (i = 0; i < conditions.length; i++) {
+  var condition = conditions[i];
+  condElements.push('<button class="menu">' + condition[0] + '</button>');
+}
+
 joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend(
 {
 	template:
 	[
 		'<div class="node">',
-		'<span class="label"></span>',
+		//'<span class="label"></span>',
+    '<div class="menucontainer-branch">',
+  ].concat(condElements).concat(
+  [
+    '</div>',
+    '<div class="menuspace"></div>',
 		'<button class="delete">x</button>',
 		'<button class="add">+</button>',
 		'<button class="remove">-</button>',
 		'<input type="text" class="name" placeholder="Variable" />',
 		'<input type="text" placeholder="Value 1"/>',
 		'</div>',
-	].join(''),
+	]).join(''),
 
 	initialize: function()
 	{
 		joint.shapes.dialogue.BaseView.prototype.initialize.apply(this, arguments);
 		this.$box.find('.add').on('click', _.bind(this.addPort, this));
 		this.$box.find('.remove').on('click', _.bind(this.removePort, this));
+
+    var menuOpen = false;
+    var menucontainer = this.$box.find('.menucontainer-branch');
+    menucontainer.children().hide();
+    var conditionId = this.model.get('condition');
+    if (conditionId == null) {
+      conditionId = 0;
+      this.model.set('condition', conditionId);
+    }
+    menucontainer.children().eq(conditionId).show();
+    var theModel = this.model;
+    this.$box.find('.menu').on('click', function (event)
+    {
+      var target = $(event.target)
+      if (!menuOpen) {
+        menucontainer.children().show();
+        menuOpen = true;
+      } else {
+        var conditionId = target.index();
+        theModel.set('condition', conditionId);
+        menucontainer.children().hide();
+        menucontainer.children().eq(conditionId).show();
+        menuOpen = false;
+      }
+    });
 	},
 
 	removePort: function()
@@ -688,13 +732,13 @@ joint.shapes.dialogue.SetView = joint.shapes.dialogue.BaseView.extend(
 
 	initialize: function()
 	{
-    var menuOpen = false;
 		joint.shapes.dialogue.BaseView.prototype.initialize.apply(this, arguments);
 		this.$box.find('input.value').on('change', _.bind(function(evt)
 		{
 			this.model.set('value', $(evt.target).val());
 		}, this));
 
+    var menuOpen = false;
     var menucontainer = this.$box.find('.menucontainer');
     menucontainer.children().hide();
     var actionId = this.model.get('action');
@@ -807,6 +851,7 @@ function gameData()
 					var branch = cell.values[j];
 					node.branches[branch] = null;
 				}
+        node.condition = conditions[cell.condition][1];
 			}
 			else if (node.type == 'Set')
 			{
