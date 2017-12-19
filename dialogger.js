@@ -783,7 +783,7 @@ joint.shapes.dialogue.Start = joint.shapes.devs.Model.extend(
 		{
 		    type: 'dialogue.Start',
 		    outPorts: ['output'],
-		    size: { width: 120, height: 60, },
+		    size: { width: 180, height: 73, },
 		    value: '',
         attrs:
         {
@@ -794,15 +794,32 @@ joint.shapes.dialogue.Start = joint.shapes.devs.Model.extend(
 	),
 });
 
+var starts = [
+  ["Interaction", "interact"],
+  ["Enter View", "enterview"],
+  ["Leave View", "leaveview"],
+];
+
+var startElements = [];
+for (i = 0; i < starts.length; i++) {
+  var start = starts[i];
+  startElements.push('<button class="menu">' + start[0] + '</button>');
+}
+
 joint.shapes.dialogue.StartView = joint.shapes.dialogue.BaseView.extend(
 {
 	template:
 	[
 		'<div class="node">',
-		'<span class="label"></span>',
-		'<button class="delete">x</button>',
+    '<button class="delete">x</button>',
+    '<div class="menucontainer">',
+  ].concat(startElements).concat(
+  [
+    '</div>',
+    '<div class="menuspace"></div>',
+    '<input type="text" class="value" placeholder="Parameter (distance etc.)" />',
 		'</div>',
-	].join(''),
+	]).join(''),
 
 	initialize: function()
 	{
@@ -819,101 +836,111 @@ joint.shapes.dialogue.StartView = joint.shapes.dialogue.BaseView.extend(
 		var field = this.$box.find('input.value');
 		if (!field.is(':focus'))
 			field.val(this.model.get('value'));
+
+    var menuOpen = false;
+    var menucontainer = this.$box.find('.menucontainer');
+    menucontainer.children().hide();
+    var eventId = this.model.get('event');
+    if (eventId == null) {
+      eventId = 0;
+      this.model.set('event', eventId);
+    }
+    menucontainer.children().eq(eventId).show();
+    var theModel = this.model;
+    this.$box.find('.menu').on('click', function (event)
+    {
+      var target = $(event.target)
+      if (!menuOpen) {
+        menucontainer.children().show();
+        menuOpen = true;
+      } else {
+        eventId = target.index();
+        theModel.set('event', eventId);
+        menucontainer.children().hide();
+        menucontainer.children().eq(eventId).show();
+        menuOpen = false;
+      }
+    });
 	},
 });
 
 //#endregion
 
-function gameData()
-{
-	var cells = graph.toJSON().cells;
-	var nodesByID = {};
-	var cellsByID = {};
-	var nodes = [];
-	for (var i = 0; i < cells.length; i++)
-	{
-		var cell = cells[i];
-		if (cell.type != 'link')
-		{
-			var node =
-			{
-				type: cell.type.slice('dialogue.'.length),
-				id: cell.id,
-				actor: cell.actor,
+function gameData() {
+  var cells = graph.toJSON().cells;
+  var nodesByID = {};
+  var cellsByID = {};
+  var nodes = [];
+  for (var i = 0; i < cells.length; i++) {
+    var cell = cells[i];
+    if (cell.type != 'link') {
+      var node = {
+        type: cell.type.slice('dialogue.'.length),
+        id: cell.id,
+        actor: cell.actor,
         title: cell.title,
-			};
-			if (node.type == 'Branch')
-			{
-				node.variable = cell.name;
-				node.branches = {};
-				for (var j = 0; j < cell.values.length; j++)
-				{
-					var branch = cell.values[j];
-					node.branches[branch] = null;
-				}
+      };
+      if (node.type == 'Branch') {
+        node.variable = cell.name;
+        node.branches = {};
+        for (var j = 0; j < cell.values.length; j++) {
+          var branch = cell.values[j];
+          node.branches[branch] = null;
+        }
         node.condition = conditions[cell.condition][1];
-			}
-			else if (node.type == 'Set')
-			{
-				node.variable = cell.name;
-				node.value = cell.value;
+      }
+      else if (node.type == 'Set') {
+        node.variable = cell.name;
+        node.value = cell.value;
         node.action = actions[cell.action][1];
-				node.next = null;
-
-			}
-			else if (node.type == 'Choice') {
-			   node.data = cell.name;
-			   node.title = cell.title;
-			   node.next = null;
-			}
-			else
-			{
-			  node.actor = cell.actor;
-				node.data = cell.name;
-				node.next = null;
-			}
-			nodes.push(node);
-			nodesByID[cell.id] = node;
-			cellsByID[cell.id] = cell;
-		}
-	}
-	for (var i = 0; i < cells.length; i++)
-	{
-		var cell = cells[i];
-		if (cell.type == 'link')
-		{
-			var source = nodesByID[cell.source.id];
-			var target = cell.target ? nodesByID[cell.target.id] : null;
-			if (source)
-			{
-				if (source.type == 'Branch')
-				{
-					var portNumber = parseInt(cell.source.port.slice('output'.length));
-					var sourceCell = cellsByID[source.id];
-					var value = sourceCell.values[portNumber];
-					source.branches[value] = target ? target.id : null;
-				}
-				else if ((source.type == 'Text' || source.type == 'Node') && target && target.type == 'Choice')
-				{
-					if (!source.choices)
-					{
-						source.choices = [];
-						//delete source.next; // Hey, don't delete this, since we can have *both* nodes and
-					}
-					source.choices.push(target.id);
-				}
-				else
-        {
-          if (!source.next)
-          {
+        node.next = null;
+      }
+      else if (node.type == 'Choice') {
+        node.data = cell.name;
+        node.title = cell.title;
+        node.next = null;
+      }
+      else if (node.type == 'Start') {
+        node.event = starts[cell.event][1];
+        node.param = cell.value;
+      } else {
+        node.actor = cell.actor;
+        node.data = cell.name;
+        node.next = null;
+      }
+      nodes.push(node);
+      nodesByID[cell.id] = node;
+      cellsByID[cell.id] = cell;
+    }
+  }
+  for (var i = 0; i < cells.length; i++) {
+    var cell = cells[i];
+    if (cell.type == 'link') {
+      var source = nodesByID[cell.source.id];
+      var target = cell.target ? nodesByID[cell.target.id] : null;
+      if (source) {
+        if (source.type == 'Branch') {
+          var portNumber = parseInt(cell.source.port.slice('output'.length));
+          var sourceCell = cellsByID[source.id];
+          var value = sourceCell.values[portNumber];
+          source.branches[value] = target ? target.id : null;
+        }
+        else if ((source.type == 'Text' || source.type == 'Node') && target && target.type == 'Choice') {
+          if (!source.choices) {
+            source.choices = [];
+            //delete source.next; // Hey, don't delete this, since we can have *both* nodes and
+          }
+          source.choices.push(target.id);
+        } else {
+          if (!source.next) {
             source.next = [];
           }
           source.next.push(target.id);
         }
-			}
-		}
-	}
-	return nodes;
+      }
+    }
+  }
+  return nodes;
 }
 
 
